@@ -2,12 +2,14 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.models import User, auth
 from django.contrib import messages
-from .models import profile
+from .models import profile,Post
 from django.contrib.auth.decorators import login_required
 
 @login_required(login_url='signin')
 def index(request):
-    return render(request,'index.html')
+    user_object = User.objects.get(username = request.user.username)
+    user_profile = profile.objects.get(user = user_object)
+    return render(request,'index.html',{'user_profile':user_profile})
 
 def signup(request):
 
@@ -30,7 +32,7 @@ def signup(request):
 
                 #log user in and direct to settings
                 user_login = auth.authenticate(username=username,email = email, password=password)
-                auth.log(request,user_login)
+                auth.login(request,user_login)
 
                 #create a profile object for the new guy
                 user_model = User.objects.get(username = username)
@@ -68,6 +70,7 @@ def logout(request):
     return redirect('signin')
 
 def settings(request):
+
     user_profile = profile.objects.get(user = request.user)
 
     if request.method == 'POST':
@@ -92,3 +95,16 @@ def settings(request):
         
     return render(request,'setting.html',{'user_profile':user_profile})
 
+@login_required(login_url='signin')
+def upload(request):
+    if request.method == 'POST':
+        user = request.user.username
+        image = request.FILES.get('image_upload')
+        caption =request.POST['caption']
+
+        new_post = Post.objects.create(user=user,image= image, caption=caption)
+        new_post.save()
+        return redirect('/')
+    else:
+        return redirect('/')
+    
