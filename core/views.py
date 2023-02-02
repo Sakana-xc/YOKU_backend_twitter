@@ -9,7 +9,8 @@ from django.contrib.auth.decorators import login_required
 def index(request):
     user_object = User.objects.get(username = request.user.username)
     user_profile = profile.objects.get(user = user_object)
-    return render(request,'index.html',{'user_profile':user_profile})
+    posts = Post.objects.all()
+    return render(request,'index.html',{'user_profile':user_profile,'posts':posts})
 
 def signup(request):
 
@@ -32,7 +33,7 @@ def signup(request):
 
                 #log user in and direct to settings
                 user_login = auth.authenticate(username=username,email = email, password=password)
-                auth.login(request,user_login)
+                auth.login (request,user_login)
 
                 #create a profile object for the new guy
                 user_model = User.objects.get(username = username)
